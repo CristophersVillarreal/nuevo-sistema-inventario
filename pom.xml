@@ -19,6 +19,8 @@
 
     <properties>
         <java.version>17</java.version>
+        <!-- Clase principal: la usan NetBeans (Run Project) y el empaquetado del .jar -->
+        <start-class>com.laesquina.inventario.InventarioApplication</start-class>
     </properties>
 
     <dependencies>
