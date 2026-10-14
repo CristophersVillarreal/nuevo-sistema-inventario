@@ -16,6 +16,8 @@ y una interfaz web con **HTML, CSS, JavaScript y Bootstrap 5**.
 
 ---
 
+> **¿Primera vez en otra PC?** Sigue la guía paso a paso: **[docs/GUIA_EQUIPO.md](docs/GUIA_EQUIPO.md)** (instalación, ejecución, interfaz web y Postman).
+
 ## 1. Requisitos
 
 | Herramienta | Versión |
@@ -154,6 +156,7 @@ src/main/java/com/laesquina/inventario
 └── service/      ProductoService, CategoriaService, MovimientoService (@Transactional)
 docs/
 ├── PLAN_AVANCE_2.md        Plan del avance
+├── GUIA_EQUIPO.md          Guía para ejecutar el proyecto en otra PC
 ├── GUIA_CAPTURAS.md        Qué capturar para el informe
 ├── INSTALACION_MYSQL.md    Instalación de MySQL 8.4 (Windows y macOS)
 ├── postman/                Colección y entorno de Postman
