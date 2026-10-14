@@ -155,9 +155,7 @@ src/main/java/com/laesquina/inventario
 ├── security/     SecurityConfig, UsuarioDetailsService, RespuestasSeguridad
 └── service/      ProductoService, CategoriaService, MovimientoService (@Transactional)
 docs/
-├── PLAN_AVANCE_2.md        Plan del avance
 ├── GUIA_EQUIPO.md          Guía para ejecutar el proyecto en otra PC
-├── GUIA_CAPTURAS.md        Qué capturar para el informe
 ├── INSTALACION_MYSQL.md    Instalación de MySQL 8.4 (Windows y macOS)
 ├── postman/                Colección y entorno de Postman
 └── sql/                    Consultas de verificación para MySQL Workbench
