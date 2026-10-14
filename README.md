@@ -31,6 +31,8 @@ No hace falta instalar Maven: el proyecto incluye el *wrapper* (`mvnw` / `mvnw.c
 
 ## 2. Base de datos
 
+> Guía paso a paso para Windows y macOS (incluida la conexión de Workbench): **[docs/INSTALACION_MYSQL.md](docs/INSTALACION_MYSQL.md)**.
+
 1. Instalar **MySQL 8.4 LTS** y anotar la contraseña de `root`.
    - **Windows**: MySQL Installer (dev.mysql.com). Si XAMPP está instalado, **apagar su MySQL**, porque ambos usan el puerto 3306.
    - **macOS**: instalador `.dmg` de dev.mysql.com, o `brew install mysql@8.4`.
@@ -153,6 +155,7 @@ src/main/java/com/laesquina/inventario
 docs/
 ├── PLAN_AVANCE_2.md        Plan del avance
 ├── GUIA_CAPTURAS.md        Qué capturar para el informe
+├── INSTALACION_MYSQL.md    Instalación de MySQL 8.4 (Windows y macOS)
 ├── postman/                Colección y entorno de Postman
 └── sql/                    Consultas de verificación para MySQL Workbench
 ```
