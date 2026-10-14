@@ -1,0 +1,98 @@
+/* Estilos de La Esquina — paleta azul del sistema */
+:root {
+    --azul-oscuro: #1c3f60;
+    --azul-medio: #365679;
+    --celeste: #cbddec;
+}
+
+body {
+    background-color: #f4f7fa;
+    min-height: 100vh;
+}
+
+/* Menu lateral */
+.sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background-color: var(--azul-oscuro);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar .nav-link {
+    color: var(--celeste);
+    border-radius: 6px;
+    margin-bottom: 4px;
+    padding: 8px 12px;
+}
+
+.sidebar .nav-link:hover {
+    background-color: var(--azul-medio);
+    color: #fff;
+}
+
+.sidebar .nav-link.activo {
+    background-color: var(--azul-medio);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Contenido */
+.contenido {
+    min-height: 100vh;
+}
+
+.btn-primary {
+    background-color: var(--azul-oscuro);
+    border-color: var(--azul-oscuro);
+}
+
+.btn-primary:hover {
+    background-color: var(--azul-medio);
+    border-color: var(--azul-medio);
+}
+
+/* Tarjetas de resumen */
+.tarjeta-resumen .h3 {
+    color: var(--azul-oscuro);
+    font-weight: 700;
+}
+
+.tarjeta-alerta {
+    border-left: 4px solid #dc3545;
+}
+
+/* Fila de producto con stock bajo */
+.fila-stock-bajo {
+    background-color: #fff3cd !important;
+}
+
+/* Chat del asistente */
+.chat-mensajes {
+    height: 320px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.chat-burbuja {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.chat-usuario {
+    background: var(--azul-oscuro);
+    color: #fff;
+    margin-left: auto;
+    border-bottom-right-radius: 2px;
+}
+
+.chat-bot {
+    background: var(--celeste);
+    color: var(--azul-oscuro);
+    border-bottom-left-radius: 2px;
+}

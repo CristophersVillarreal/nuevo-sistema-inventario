@@ -1,0 +1,22 @@
+# Compilacion
+target/
+*.class
+
+# IDE
+nbproject/private/
+nbactions.xml
+nb-configuration.xml
+.idea/
+*.iml
+.vscode/
+
+# Sistema operativo
+.DS_Store
+._*
+Thumbs.db
+desktop.ini
+
+# Variables de entorno locales (NUNCA subir credenciales ni API keys)
+.env
+*.env
+application-local.properties
