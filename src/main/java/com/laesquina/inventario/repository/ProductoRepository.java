@@ -1,66 +1,33 @@
 package com.laesquina.inventario.repository;
 
 import com.laesquina.inventario.model.Producto;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Repositorio de productos EN MEMORIA (Fase 1).
+ * Repositorio de productos con Spring Data JPA (Avance 2).
  *
- * Guarda los productos en una lista y simula una base de datos.
- * En Fase 2 esta clase se reemplaza por Spring Data JPA sin tocar
- * el servicio ni el controlador.
+ * Reemplaza a la lista en memoria del Avance 1. Al extender JpaRepository,
+ * Spring genera save, findAll, findById, deleteById, etc. sin escribir SQL.
+ * Las consultas personalizadas se escriben en JPQL con @Query.
  */
-@Repository
-public class ProductoRepository {
+public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
-    // "Tabla" en memoria.
-    private final List<Producto> productos = new ArrayList<>();
-    // Generador de ids autoincrementales.
-    private final AtomicLong secuencia = new AtomicLong(0);
+    // JPQL Q1 (RF03): productos cuyo stock esta en o por debajo del minimo.
+    // En el Avance 1 este filtro se hacia en Java; ahora lo resuelve la base de datos.
+    @Query("SELECT p FROM Producto p WHERE p.stock <= p.stockMinimo ORDER BY p.stock")
+    List<Producto> buscarStockBajo();
 
-    public ProductoRepository() {
-        // Datos de ejemplo precargados para la demostracion.
-        guardar(new Producto(null, "Arroz Costeño 1kg", "Abarrotes", 4.50, 30, 10));
-        guardar(new Producto(null, "Aceite Primor 1L", "Abarrotes", 9.90, 8, 10));
-        guardar(new Producto(null, "Leche Gloria 400g", "Lacteos", 3.80, 25, 12));
-        guardar(new Producto(null, "Coca Cola 500ml", "Bebidas", 2.50, 5, 15));
-        guardar(new Producto(null, "Fideos Don Vittorio", "Abarrotes", 3.20, 40, 10));
-        guardar(new Producto(null, "Agua San Luis 625ml", "Bebidas", 1.50, 60, 20));
-    }
+    // JPQL Q3 (RF04): productos que vencen hasta la fecha limite
+    // (incluye los ya vencidos, que tambien deben retirarse), del mas proximo al mas lejano.
+    @Query("SELECT p FROM Producto p WHERE p.fechaVencimiento IS NOT NULL "
+            + "AND p.fechaVencimiento <= :limite ORDER BY p.fechaVencimiento")
+    List<Producto> buscarPorVencer(@Param("limite") LocalDate limite);
 
-    public List<Producto> listar() {
-        return new ArrayList<>(productos);
-    }
-
-    public Optional<Producto> buscarPorId(Long id) {
-        return productos.stream()
-                .filter(p -> p.getId().equals(id))
-                .findFirst();
-    }
-
-    public Producto guardar(Producto producto) {
-        if (producto.getId() == null) {
-            // Nuevo: asignar id.
-            producto.setId(secuencia.incrementAndGet());
-            productos.add(producto);
-        } else {
-            // Existente: reemplazar en su posicion.
-            eliminar(producto.getId());
-            productos.add(producto);
-            // Mantener la secuencia por encima de ids manuales.
-            if (producto.getId() > secuencia.get()) {
-                secuencia.set(producto.getId());
-            }
-        }
-        return producto;
-    }
-
-    public boolean eliminar(Long id) {
-        return productos.removeIf(p -> p.getId().equals(id));
-    }
+    // Usado para impedir borrar una categoria que todavia tiene productos.
+    boolean existsByCategoriaId(Long categoriaId);
 }

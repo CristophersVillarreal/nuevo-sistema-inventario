@@ -85,6 +85,8 @@
                                 <th>ID</th>
                                 <th>Nombre</th>
                                 <th>Categoría</th>
+                                <th>Ubicación</th>
+                                <th>Vence</th>
                                 <th class="text-end">Precio</th>
                                 <th class="text-end">Stock</th>
                                 <th class="text-end">Stock mín.</th>
@@ -113,6 +115,23 @@
                             </tr>
                         </thead>
                         <tbody id="tabla-alertas"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <h4 class="mt-5 mb-3">Próximos a vencer (30 días)</h4>
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Ubicación</th>
+                                <th>Fecha de vencimiento</th>
+                                <th class="text-end">Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-vencer"></tbody>
                     </table>
                 </div>
             </div>
@@ -156,7 +175,18 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Categoría</label>
-                        <input type="text" class="form-control" id="prod-categoria" required>
+                        <select class="form-select" id="prod-categoria" required></select>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Ubicación</label>
+                            <input type="text" class="form-control" id="prod-ubicacion" maxlength="60"
+                                   placeholder="Pasillo 2 - Estante B">
+                        </div>
+                        <div class="col mb-3">
+                            <label class="form-label">Fecha de vencimiento</label>
+                            <input type="date" class="form-control" id="prod-vencimiento">
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col mb-3">
@@ -172,6 +202,7 @@
                             <input type="number" min="0" class="form-control" id="prod-stockminimo" required>
                         </div>
                     </div>
+                    <div class="alert alert-danger py-2 mb-0" id="prod-error" hidden></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

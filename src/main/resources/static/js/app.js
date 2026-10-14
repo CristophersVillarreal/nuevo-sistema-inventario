@@ -1,8 +1,12 @@
 // app.js — Lógica del frontend. Consume la API REST con fetch.
+// Avance 2: la API está protegida con HTTP Basic. El navegador pide usuario y
+// contraseña al abrir la página y los reenvía automáticamente en cada fetch.
 
 const API = "/api/productos";
+const API_CATEGORIAS = "/api/categorias";
 let modalProducto;
 let productosCache = [];
+let categoriasCache = [];
 
 document.addEventListener("DOMContentLoaded", () => {
     modalProducto = new bootstrap.Modal(document.getElementById("modal-producto"));
@@ -34,16 +38,48 @@ function cambiarVista(vista, link) {
     link.classList.add("activo");
 }
 
-// Trae los productos y refresca todas las vistas
+// Llama a la API y, si responde con error (400, 401, 403, 404, 409),
+// lanza un Error con el mensaje que envió el backend.
+async function pedir(url, opciones = {}) {
+    // URL absoluta desde location.origin (nunca incluye usuario:contraseña).
+    const resp = await fetch(new URL(url, window.location.origin), opciones);
+    if (!resp.ok) {
+        let mensaje = `Error ${resp.status}`;
+        try {
+            const cuerpo = await resp.json();
+            mensaje = cuerpo.mensaje || mensaje;
+            if (cuerpo.detalles) {
+                mensaje += ": " + Object.values(cuerpo.detalles).join(", ");
+            }
+        } catch (e) { /* respuesta sin JSON */ }
+        throw new Error(mensaje);
+    }
+    return resp.status === 204 ? null : resp.json();
+}
+
+// Evita que un texto guardado en la BD se interprete como HTML.
+function esc(texto) {
+    const div = document.createElement("div");
+    div.textContent = texto ?? "";
+    return div.innerHTML;
+}
+
+// Fecha ISO (2026-11-08) -> 08/11/2026
+function formatoFecha(iso) {
+    if (!iso) return "—";
+    const [a, m, d] = iso.split("-");
+    return `${d}/${m}/${a}`;
+}
+
+// Trae los productos y categorias y refresca todas las vistas
 async function cargarTodo() {
     try {
-        const resp = await fetch(API);
-        productosCache = await resp.json();
+        [productosCache, categoriasCache] = await Promise.all([pedir(API), pedir(API_CATEGORIAS)]);
         renderTablaProductos();
         renderPanel();
         renderAlertas();
     } catch (err) {
-        alert("No se pudo conectar con el servidor. ¿Está corriendo el backend?");
+        alert("No se pudo cargar el inventario: " + err.message);
     }
 }
 
@@ -57,8 +93,10 @@ function renderTablaProductos() {
         if (bajo) tr.classList.add("fila-stock-bajo");
         tr.innerHTML = `
             <td>${p.id}</td>
-            <td>${p.nombre}</td>
-            <td>${p.categoria}</td>
+            <td>${esc(p.nombre)}</td>
+            <td>${esc(p.categoria?.nombre)}</td>
+            <td>${esc(p.ubicacion) || "—"}</td>
+            <td>${formatoFecha(p.fechaVencimiento)}</td>
             <td class="text-end">S/ ${p.precio.toFixed(2)}</td>
             <td class="text-end">${p.stock}</td>
             <td class="text-end">${p.stockMinimo}</td>
@@ -75,9 +113,25 @@ function renderTablaProductos() {
     });
 }
 
+// Llena el selector de categorias del formulario
+function llenarCategorias(seleccionada) {
+    const select = document.getElementById("prod-categoria");
+    select.innerHTML = '<option value="">Seleccione…</option>' + categoriasCache
+        .map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join("");
+    select.value = seleccionada ?? "";
+}
+
+function mostrarErrorFormulario(mensaje) {
+    const caja = document.getElementById("prod-error");
+    caja.textContent = mensaje || "";
+    caja.hidden = !mensaje;
+}
+
 function abrirNuevo() {
     document.getElementById("form-producto").reset();
     document.getElementById("prod-id").value = "";
+    llenarCategorias();
+    mostrarErrorFormulario(null);
     document.getElementById("modal-titulo").textContent = "Nuevo producto";
     modalProducto.show();
 }
@@ -87,10 +141,13 @@ function editar(id) {
     if (!p) return;
     document.getElementById("prod-id").value = p.id;
     document.getElementById("prod-nombre").value = p.nombre;
-    document.getElementById("prod-categoria").value = p.categoria;
+    llenarCategorias(p.categoria?.id);
+    document.getElementById("prod-ubicacion").value = p.ubicacion ?? "";
+    document.getElementById("prod-vencimiento").value = p.fechaVencimiento ?? "";
     document.getElementById("prod-precio").value = p.precio;
     document.getElementById("prod-stock").value = p.stock;
     document.getElementById("prod-stockminimo").value = p.stockMinimo;
+    mostrarErrorFormulario(null);
     document.getElementById("modal-titulo").textContent = "Editar producto";
     modalProducto.show();
 }
@@ -100,7 +157,9 @@ async function guardarProducto(e) {
     const id = document.getElementById("prod-id").value;
     const producto = {
         nombre: document.getElementById("prod-nombre").value,
-        categoria: document.getElementById("prod-categoria").value,
+        categoria: { id: parseInt(document.getElementById("prod-categoria").value) },
+        ubicacion: document.getElementById("prod-ubicacion").value || null,
+        fechaVencimiento: document.getElementById("prod-vencimiento").value || null,
         precio: parseFloat(document.getElementById("prod-precio").value),
         stock: parseInt(document.getElementById("prod-stock").value),
         stockMinimo: parseInt(document.getElementById("prod-stockminimo").value)
@@ -109,20 +168,29 @@ async function guardarProducto(e) {
     const url = id ? `${API}/${id}` : API;
     const metodo = id ? "PUT" : "POST";
 
-    await fetch(url, {
-        method: metodo,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(producto)
-    });
-
-    modalProducto.hide();
-    cargarTodo();
+    try {
+        await pedir(url, {
+            method: metodo,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(producto)
+        });
+        modalProducto.hide();
+        cargarTodo();
+    } catch (err) {
+        // Ej.: 403 si el usuario es OPERADOR, 400 si faltan datos.
+        mostrarErrorFormulario(err.message);
+    }
 }
 
 async function eliminar(id) {
     if (!confirm("¿Eliminar este producto?")) return;
-    await fetch(`${API}/${id}`, { method: "DELETE" });
-    cargarTodo();
+    try {
+        await pedir(`${API}/${id}`, { method: "DELETE" });
+        cargarTodo();
+    } catch (err) {
+        // Ej.: 403 si el usuario es OPERADOR, 409 si el producto tiene movimientos.
+        alert("No se pudo eliminar: " + err.message);
+    }
 }
 
 // --- PANEL ---
@@ -143,27 +211,39 @@ function renderPanel() {
     } else {
         cont.innerHTML = bajos.map(p =>
             `<div class="alert alert-warning py-2 mb-2">
-                <strong>${p.nombre}</strong> — quedan ${p.stock} (mínimo ${p.stockMinimo})
+                <strong>${esc(p.nombre)}</strong> — quedan ${p.stock} (mínimo ${p.stockMinimo})
             </div>`).join("");
     }
 }
 
-// --- ALERTAS ---
+// --- ALERTAS (consultas JPQL del backend) ---
 async function renderAlertas() {
-    const resp = await fetch(`${API}/stock-bajo`);
-    const bajos = await resp.json();
+    const [bajos, porVencer] = await Promise.all([
+        pedir(`${API}/stock-bajo`),
+        pedir(`${API}/por-vencer?dias=30`)
+    ]);
+
     const tbody = document.getElementById("tabla-alertas");
-    if (bajos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-success">Sin alertas.</td></tr>';
-        return;
-    }
-    tbody.innerHTML = bajos.map(p => `
-        <tr class="fila-stock-bajo">
-            <td>${p.nombre}</td>
-            <td>${p.categoria}</td>
-            <td class="text-end">${p.stock}</td>
-            <td class="text-end">${p.stockMinimo}</td>
-        </tr>`).join("");
+    tbody.innerHTML = bajos.length === 0
+        ? '<tr><td colspan="4" class="text-success">Sin alertas.</td></tr>'
+        : bajos.map(p => `
+            <tr class="fila-stock-bajo">
+                <td>${esc(p.nombre)}</td>
+                <td>${esc(p.categoria?.nombre)}</td>
+                <td class="text-end">${p.stock}</td>
+                <td class="text-end">${p.stockMinimo}</td>
+            </tr>`).join("");
+
+    const tbodyVencer = document.getElementById("tabla-vencer");
+    tbodyVencer.innerHTML = porVencer.length === 0
+        ? '<tr><td colspan="4" class="text-success">Ningún producto vence en los próximos 30 días.</td></tr>'
+        : porVencer.map(p => `
+            <tr>
+                <td>${esc(p.nombre)}</td>
+                <td>${esc(p.ubicacion) || "—"}</td>
+                <td>${formatoFecha(p.fechaVencimiento)}</td>
+                <td class="text-end">${p.stock}</td>
+            </tr>`).join("");
 }
 
 // --- ASISTENTE (vista previa local, sin IA real) ---
