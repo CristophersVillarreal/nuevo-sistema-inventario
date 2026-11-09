@@ -1,0 +1,46 @@
+.encabezado-pagina { margin-bottom: 24px; }
+.encabezado-pagina h2 { margin: 0 0 4px; }
+.subtitulo { color: #888; margin: 0; font-size: 14px; }
+
+.resumen { display: flex; gap: 16px; margin-bottom: 32px; }
+.resumen-item {
+  flex: 1; background: white; border-radius: 14px; padding: 20px;
+  display: flex; flex-direction: column; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border-left: 4px solid transparent;
+}
+.resumen-critico { border-left-color: #c0392b; }
+.resumen-alerta { border-left-color: #e67e22; }
+.resumen-item .numero { font-size: 28px; font-weight: 700; }
+.resumen-item .etiqueta { font-size: 13px; color: #888; margin-top: 4px; }
+
+.seccion { margin-bottom: 36px; }
+.titulo-seccion { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.titulo-seccion svg { width: 20px; height: 20px; color: #555; }
+.titulo-seccion h3 { margin: 0; font-size: 17px; }
+.ok { color: #2e7d32; background: white; padding: 16px; border-radius: 12px; }
+
+.tarjetas-alerta { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.tarjeta-producto {
+  background: white; border-radius: 14px; padding: 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border-left: 4px solid #e67e22;
+}
+.tarjeta-producto.critico { border-left-color: #c0392b; }
+.info-producto { display: flex; flex-direction: column; margin-bottom: 14px; }
+.info-producto strong { font-size: 15px; }
+.info-producto .categoria { font-size: 12px; color: #999; margin-top: 2px; }
+
+.indicador-stock { margin-bottom: 12px; }
+.barra-fondo { background: #f0f0f0; border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: 6px; }
+.barra-relleno { background: linear-gradient(90deg, #c0392b, #e67e22); height: 100%; border-radius: 999px; }
+.texto-stock { font-size: 12px; color: #888; }
+.texto-stock .actual { font-weight: 700; color: #333; }
+
+.pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.pill-critico { background: #fdecea; color: #c0392b; }
+.pill-alerta { background: #fff3e0; color: #e67e22; }
+.pill-ok { background: #e8f5e9; color: #2e7d32; }
+
+.tabla-vencer { width: 100%; background: white; border-radius: 14px; overflow: hidden; border-collapse: collapse; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.tabla-vencer th, .tabla-vencer td { text-align: left; padding: 14px 16px; border-bottom: 1px solid #f2f2f2; font-size: 14px; }
+.tabla-vencer th { background: #fafafa; font-size: 12px; color: #999; }

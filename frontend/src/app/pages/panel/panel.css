@@ -1,0 +1,100 @@
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin: 24px 0;
+}
+.tarjeta {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.tarjeta-alerta {
+  background: #fff4f2;
+}
+.etiqueta {
+  display: block;
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 6px;
+}
+.valor {
+  font-size: 22px;
+  font-weight: 700;
+}
+.caja-alertas {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.ok {
+  color: #2e7d32;
+  margin: 0;
+}
+.alerta {
+  background: #fff3cd;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+
+
+
+
+
+.grilla-graficos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.caja-grafico {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  min-width: 0;
+  overflow: hidden;
+}
+.caja-grafico h3 { margin: 0 0 12px; font-size: 15px; }
+
+
+.grilla-graficos { grid-template-columns: 1fr 1fr; }
+.caja-angosta { grid-column: span 1; }
+.caja-resto { grid-column: span 1; }
+
+
+
+.caja-grafico apx-chart { display: block; width: 100%; }
+
+.mes-actual { text-transform: capitalize; color: #888; font-size: 13px; margin: -8px 0 12px; }
+.grilla-calendario { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.dia-nombre { text-align: center; font-size: 11px; color: #aaa; font-weight: 600; padding-bottom: 6px; }
+.celda-vacia { visibility: hidden; }
+.celda-dia {
+  position: relative;
+  background: #f7f7f8;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 0;
+  font-size: 13px;
+  cursor: pointer;
+  color: #444;
+  width: 100%;
+}
+.celda-dia:hover { background: #eee; }
+.celda-dia.hoy { border-color: #2e7d32; font-weight: 700; background: #f0f8f0; }
+.celda-dia.seleccionado { background: #2e7d32; color: white; border-color: #2e7d32; }
+.celda-dia .punto {
+  position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 5px; height: 5px; border-radius: 50%; background: #e67e22;
+}
+.celda-dia.seleccionado .punto { background: white; }
+.btn-limpiar {
+  margin-top: 12px; background: #fdecea; color: #c0392b; border: none;
+  padding: 7px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+}
+.sin-datos { color: #aaa; text-align: center; padding: 40px 0; }

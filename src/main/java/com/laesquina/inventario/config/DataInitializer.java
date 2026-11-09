@@ -67,8 +67,10 @@ public class DataInitializer implements CommandLineRunner {
             Rol admin = rolRepository.findByNombre(Rol.ADMIN).orElseThrow();
             Rol operador = rolRepository.findByNombre(Rol.OPERADOR).orElseThrow();
             // La contrasena se guarda cifrada con BCrypt.
-            usuarioRepository.save(new Usuario(adminUsername, passwordEncoder.encode(adminPassword), admin));
-            usuarioRepository.save(new Usuario(operadorUsername, passwordEncoder.encode(operadorPassword), operador));
+
+            usuarioRepository.save(new Usuario(adminUsername, passwordEncoder.encode(adminPassword), admin, "Administrador", "Sistema"));
+            usuarioRepository.save(new Usuario(operadorUsername, passwordEncoder.encode(operadorPassword), operador, "Operador", "Sistema"));
+
             log.info("Usuarios de prueba creados: {} (ADMIN) y {} (OPERADOR)", adminUsername, operadorUsername);
         }
 

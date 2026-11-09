@@ -1,0 +1,81 @@
+<div class="encabezado">
+  <h2>Usuarios del sistema</h2>
+  <button class="btn-primario" (click)="abrirNuevo()">+ Nuevo usuario</button>
+</div>
+
+@if (cargando()) {
+<p>Cargando…</p>
+} @else {
+<table>
+  <thead>
+  <tr>
+    <th>Usuario</th>
+    <th>Nombre completo</th>
+    <th>Rol</th>
+    <th>Estado</th>
+    <th>Acciones</th>
+  </tr>
+  </thead>
+  <tbody>
+  @for (u of usuarios(); track u.id) {
+  <tr [class.fila-inactiva]="!u.activo">
+    <td>{{ u.username }}</td>
+    <td>{{ u.nombre }} {{ u.apellidos }}</td>
+    <td>{{ u.rol }}</td>
+    <td>
+      @if (u.activo) {
+      <span class="badge badge-ok">Activo</span>
+      } @else {
+      <span class="badge badge-danger">Inactivo</span>
+      }
+    </td>
+    <td>
+      <button class="btn-chico" [class.btn-peligro]="u.activo" (click)="cambiarEstado(u)">
+        {{ u.activo ? 'Desactivar' : 'Activar' }}
+      </button>
+    </td>
+  </tr>
+  }
+  </tbody>
+</table>
+}
+
+@if (modalAbierto()) {
+<div class="fondo-modal" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3>Nuevo usuario</h3>
+
+    <label>Usuario (para iniciar sesión)</label>
+    <input type="text" [(ngModel)]="username" />
+
+    <label>Contraseña</label>
+    <input type="password" [(ngModel)]="password" />
+
+    <label>Rol</label>
+    <select [(ngModel)]="rol">
+      <option value="OPERADOR">Operador</option>
+      <option value="ADMIN">Administrador</option>
+    </select>
+
+    <div class="fila-2">
+      <div>
+        <label>Nombre</label>
+        <input type="text" [(ngModel)]="nombre" />
+      </div>
+      <div>
+        <label>Apellidos</label>
+        <input type="text" [(ngModel)]="apellidos" />
+      </div>
+    </div>
+
+    @if (errorForm()) {
+    <p class="mensaje-error">{{ errorForm() }}</p>
+    }
+
+    <div class="acciones-modal">
+      <button class="btn-secundario" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-primario" (click)="guardar()">Crear usuario</button>
+    </div>
+  </div>
+</div>
+}

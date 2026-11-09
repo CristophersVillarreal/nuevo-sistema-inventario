@@ -1,0 +1,52 @@
+<div class="pagina-perfil">
+  @if (cargando()) {
+  <p>Cargando…</p>
+  } @else {
+  <div>
+    <div class="encabezado-perfil">
+      <h2>Mi perfil</h2>
+      <p>Actualiza tu información personal</p>
+    </div>
+
+    <div class="tarjeta-perfil">
+      <div class="columna-foto">
+        @if (urlFoto()) {
+        <img [src]="urlFoto()" class="foto-perfil" alt="Foto de perfil" />
+        } @else {
+        <div class="foto-inicial">{{ inicial() }}</div>
+        }
+        <label class="btn-cambiar-foto">
+          Cambiar foto
+          <input type="file" accept="image/*" (change)="seleccionarFoto($event)" hidden />
+        </label>
+      </div>
+
+      <div class="columna-datos">
+        <div class="campo-bloqueado">
+          <label>Usuario</label>
+          <input type="text" [value]="perfil()?.username" disabled />
+        </div>
+
+        <div class="campo-bloqueado">
+          <label>Rol</label>
+          <input type="text" [value]="perfil()?.rol" disabled />
+        </div>
+
+        <label>Nombre</label>
+        <input type="text" [(ngModel)]="nombre" />
+
+        <label>Apellidos</label>
+        <input type="text" [(ngModel)]="apellidos" />
+
+        @if (mensaje()) {
+        <p class="mensaje-ok">{{ mensaje() }}</p>
+        }
+
+        <button class="btn-primario" (click)="guardarDatos()" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando…' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+</div>

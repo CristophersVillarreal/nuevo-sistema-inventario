@@ -2,6 +2,7 @@ package com.laesquina.inventario.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,6 +32,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, RespuestasSeguridad respuestas) throws Exception {
         http
+             .cors(Customizer.withDefaults())
             // API REST sin sesiones ni cookies: la proteccion CSRF no aplica y bloquearia los POST.
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -39,6 +41,9 @@ public class SecurityConfig {
                     .authenticationEntryPoint(respuestas)   // 401
                     .accessDeniedHandler(respuestas))       // 403
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/usuarios/**").hasRole(ADMIN)
+                    .requestMatchers("/fotos-perfil/**").permitAll()
+                    .requestMatchers("/api/perfil/**").authenticated()
                 // Pagina interna de errores de Spring Boot (no expone datos del inventario)
                 .requestMatchers("/error").permitAll()
                 // Consultas: ADMIN y OPERADOR
@@ -49,6 +54,7 @@ public class SecurityConfig {
                         .hasAnyRole(ADMIN, OPERADOR)
                 // Gestion del catalogo (POST, PUT, DELETE): solo ADMIN
                 .requestMatchers("/api/productos/**", "/api/categorias/**").hasRole(ADMIN)
+                    .requestMatchers(HttpMethod.POST, "/api/asistente/consultar").hasAnyRole(ADMIN, OPERADOR)
                 // Cualquier otra ruta (incluida la interfaz web): usuario autenticado
                 .anyRequest().authenticated()
             );

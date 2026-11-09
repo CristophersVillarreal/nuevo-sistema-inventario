@@ -12,4 +12,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     // Spring Security lo usa para identificar al usuario que inicia sesion.
     Optional<Usuario> findByUsername(String username);
+
+    boolean existsByUsername(String username);
 }

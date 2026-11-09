@@ -1,0 +1,53 @@
+<div class="pantalla-asistente">
+
+  <aside class="panel-historial">
+    <button class="btn-nuevo-chat" (click)="chat.nuevoChat()">+ Crear nuevo chat</button>
+
+    <div class="lista-historial">
+      <p class="titulo-historial">Historial de chats</p>
+      @for (c of chat.chats(); track c.id) {
+      <button
+        class="item-historial"
+        [class.activo]="c.id === chat.chatActivoId()"
+        (click)="chat.seleccionarChat(c.id)"
+      >
+        {{ c.titulo }}
+      </button>
+      }
+    </div>
+  </aside>
+
+  <section class="caja-chat">
+    <div class="mensajes">
+      @if (chat.chatActivo()?.mensajes?.length === 0) {
+      <p class="vacio">Escribe tu primera pregunta sobre el inventario…</p>
+      }
+      @for (m of chat.chatActivo()?.mensajes; track $index) {
+      <div class="burbuja" [class.burbuja-usuario]="m.quien === 'usuario'" [class.burbuja-bot]="m.quien === 'bot'">
+        <markdown [data]="m.texto"></markdown>
+      </div>
+      }
+      @if (enviando()) {
+      <div class="burbuja burbuja-bot">Escribiendo…</div>
+      }
+    </div>
+
+    <form (ngSubmit)="enviar()" class="form-chat">
+      <input
+        type="text"
+        [(ngModel)]="pregunta"
+        name="pregunta"
+        placeholder="Ej: ¿cuánto me queda de arroz?"
+        autocomplete="off"
+        [disabled]="enviando()"
+      />
+      <button type="submit" [disabled]="enviando()" class="btn-enviar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+    </form>
+  </section>
+
+</div>

@@ -23,6 +23,20 @@ public class Usuario {
     @Column(nullable = false, length = 100)
     private String password;
 
+    @Column(length = 80)
+    private String nombre;
+
+    @Column(length = 80)
+    private String apellidos;
+
+    // Nombre del archivo de la foto (se guarda en una carpeta del servidor, no en la BD).
+    @Column(length = 150)
+    private String foto;
+
+    // Permite desactivar una cuenta sin borrarla (conserva su historial de movimientos).
+    @Column(nullable = false)
+    private boolean activo = true;
+
     @ManyToOne
     @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;
@@ -34,6 +48,14 @@ public class Usuario {
         this.username = username;
         this.password = password;
         this.rol = rol;
+    }
+
+    public Usuario(String username, String password, Rol rol, String nombre, String apellidos) {
+        this.username = username;
+        this.password = password;
+        this.rol = rol;
+        this.nombre = nombre;
+        this.apellidos = apellidos;
     }
 
     public Long getId() {
@@ -58,6 +80,38 @@ public class Usuario {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellidos() {
+        return apellidos;
+    }
+
+    public void setApellidos(String apellidos) {
+        this.apellidos = apellidos;
+    }
+
+    public String getFoto() {
+        return foto;
+    }
+
+    public void setFoto(String foto) {
+        this.foto = foto;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public Rol getRol() {

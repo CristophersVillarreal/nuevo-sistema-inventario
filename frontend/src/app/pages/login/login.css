@@ -1,0 +1,106 @@
+.pantalla-login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #ece9e6;
+}
+
+.tarjeta-login {
+  display: flex;
+  width: 820px;
+  max-width: 92vw;
+  height: 500px;
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+}
+
+/* --- Columna del formulario --- */
+.col-form {
+  flex: 1;
+  padding: 48px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.col-form h2 { margin: 0 0 4px; font-size: 26px; }
+.subtitulo { color: #777; margin: 0 0 28px; font-size: 14px; }
+
+.col-form form { display: flex; flex-direction: column; }
+label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: 6px; }
+input {
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #f7f7f8;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+input:focus { border-color: #c97b63; }
+
+.mensaje-error { color: #c0392b; font-size: 13px; margin: -10px 0 16px; }
+
+button {
+  background: linear-gradient(135deg, #c97b63, #a65c6a);
+  color: white;
+  border: none;
+  padding: 13px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 6px;
+}
+button:disabled { opacity: 0.6; cursor: default; }
+
+/* --- Columna de la ilustración (generada con CSS, sin imágenes externas) --- */
+.col-ilustracion {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #4a3b63 0%, #c4654f 45%, #f2a65a 75%, #f7d9a0 100%);
+}
+
+.sol {
+  position: absolute;
+  top: 60px;
+  right: 90px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #fff6d9;
+  box-shadow: 0 0 60px 20px rgba(255, 246, 217, 0.55);
+}
+
+.monte {
+  position: absolute;
+  bottom: 0;
+  left: -10%;
+  width: 120%;
+  height: 55%;
+  clip-path: polygon(0% 100%, 0% 40%, 20% 55%, 38% 30%, 55% 60%, 72% 25%, 88% 50%, 100% 35%, 100% 100%);
+}
+.monte-3 { height: 65%; background: #6b3f52; opacity: 0.55; }
+.monte-2 { height: 50%; background: #4a2e46; opacity: 0.75; }
+.monte-1 { height: 35%; background: #2e1f3a; opacity: 0.95; }
+
+.frase {
+  position: absolute;
+  bottom: 28px;
+  left: 28px;
+  right: 28px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 680px) {
+  .col-ilustracion { display: none; }
+  .tarjeta-login { width: 380px; height: auto; }
+}

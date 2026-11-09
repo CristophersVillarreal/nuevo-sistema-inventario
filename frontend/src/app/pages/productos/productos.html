@@ -1,0 +1,110 @@
+<div class="encabezado">
+  <h2>Productos</h2>
+  @if (auth.esAdmin()) {
+  <button class="btn-primario" (click)="abrirNuevo()">+ Nuevo producto</button>
+  }
+</div>
+
+@if (cargando()) {
+<p>Cargando…</p>
+} @else {
+<table>
+  <thead>
+  <tr>
+    <th>ID</th>
+    <th>Nombre</th>
+    <th>Categoría</th>
+    <th>Ubicación</th>
+    <th>Vence</th>
+    <th>Precio</th>
+    <th>Stock</th>
+    <th>Stock mín.</th>
+    <th>Estado</th>
+    <th>Acciones</th>
+  </tr>
+  </thead>
+  <tbody>
+  @for (p of productos(); track p.id) {
+  <tr [class.fila-alerta]="stockBajo(p)">
+    <td>{{ p.id }}</td>
+    <td>{{ p.nombre }}</td>
+    <td>{{ p.categoria?.nombre || '—' }}</td>
+    <td>{{ p.ubicacion || '—' }}</td>
+    <td>{{ p.fechaVencimiento || '—' }}</td>
+    <td>S/ {{ p.precio.toFixed(2) }}</td>
+    <td>{{ p.stock }}</td>
+    <td>{{ p.stockMinimo }}</td>
+    <td>
+      @if (stockBajo(p)) {
+      <span class="badge badge-danger">Stock bajo</span>
+      } @else {
+      <span class="badge badge-ok">OK</span>
+      }
+    </td>
+    <td>
+      @if (auth.esAdmin()) {
+      <button class="btn-chico" (click)="editar(p)">Editar</button>
+      <button class="btn-chico btn-peligro" (click)="eliminar(p.id)">Eliminar</button>
+      } @else {
+      <span class="sin-permiso">—</span>
+      }
+    </td>
+  </tr>
+  }
+  </tbody>
+</table>
+}
+
+@if (modalAbierto()) {
+<div class="fondo-modal" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3>{{ modalTitulo() }}</h3>
+
+    <label>Nombre</label>
+    <input type="text" [(ngModel)]="nombre" />
+
+    <label>Categoría</label>
+    <select [(ngModel)]="categoriaId">
+      <option [ngValue]="null">Seleccione…</option>
+      @for (c of categorias(); track c.id) {
+      <option [ngValue]="c.id">{{ c.nombre }}</option>
+      }
+    </select>
+
+    <div class="fila-2">
+      <div>
+        <label>Ubicación</label>
+        <input type="text" [(ngModel)]="ubicacion" placeholder="Pasillo 2 - Estante B" />
+      </div>
+      <div>
+        <label>Fecha de vencimiento</label>
+        <input type="date" [(ngModel)]="fechaVencimiento" />
+      </div>
+    </div>
+
+    <div class="fila-3">
+      <div>
+        <label>Precio (S/)</label>
+        <input type="number" step="0.01" min="0" [(ngModel)]="precio" />
+      </div>
+      <div>
+        <label>Stock</label>
+        <input type="number" min="0" [(ngModel)]="stock" />
+      </div>
+      <div>
+        <label>Stock mínimo</label>
+        <input type="number" min="0" [(ngModel)]="stockMinimo" />
+      </div>
+    </div>
+
+    @if (errorForm()) {
+    <p class="mensaje-error">{{ errorForm() }}</p>
+    }
+
+    <div class="acciones-modal">
+      <button class="btn-secundario" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-primario" (click)="guardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+}

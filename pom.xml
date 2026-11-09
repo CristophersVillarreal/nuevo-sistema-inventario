@@ -12,9 +12,9 @@
     </parent>
 
     <groupId>com.laesquina</groupId>
-    <artifactId>inventario</artifactId>
+    <artifactId>nuevo-sistema-inventario</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>inventario</name>
+    <name>nuevo-sistema-inventario</name>
     <description>Sistema de Gestion de Inventario - La Esquina</description>
 
     <properties>

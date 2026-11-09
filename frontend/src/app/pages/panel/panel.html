@@ -1,0 +1,82 @@
+<h2>Panel de control</h2>
+
+@if (cargando()) {
+<p>Cargando…</p>
+} @else {
+<div class="tarjetas">
+  <div class="tarjeta">
+    <span class="etiqueta">Total de productos</span>
+    <span class="valor">{{ total() }}</span>
+  </div>
+  <div class="tarjeta">
+    <span class="etiqueta">Unidades en stock</span>
+    <span class="valor">{{ unidades() }}</span>
+  </div>
+  <div class="tarjeta">
+    <span class="etiqueta">Valor del inventario</span>
+    <span class="valor">S/ {{ valor().toFixed(2) }}</span>
+  </div>
+  <div class="tarjeta tarjeta-alerta">
+    <span class="etiqueta">Productos con stock bajo</span>
+    <span class="valor">{{ bajos().length }}</span>
+  </div>
+</div>
+
+<div class="grilla-graficos">
+  <div class="caja-grafico">
+    <h3>Stock por categoría</h3>
+    <apx-chart [series]="serieBarras" [chart]="chartBarras" [xaxis]="xaxisBarras"></apx-chart>
+  </div>
+
+  <div class="caja-grafico">
+    <h3>% de productos sin alerta</h3>
+    <apx-chart
+      [series]="serieRadial"
+      [chart]="chartRadial"
+      [plotOptions]="plotOptionsRadial"
+      [labels]="['Sin alerta']"
+    ></apx-chart>
+  </div>
+
+  <div class="caja-grafico caja-angosta">
+    <h3>Calendario de vencimientos</h3>
+    <p class="mes-actual">{{ nombreMes() }}</p>
+    <div class="grilla-calendario">
+      @for (letra of ['D','L','M','M','J','V','S']; track $index) {
+      <span class="dia-nombre">{{ letra }}</span>
+      }
+      @for (dia of diasCalendario(); track $index) {
+      @if (dia === null) {
+      <span class="celda-vacia"></span>
+      } @else {
+      <button
+        class="celda-dia"
+        [class.hoy]="dia.esHoy"
+        [class.tiene-vencimiento]="dia.tieneVencimiento"
+        [class.seleccionado]="dia.fechaISO === fechaSeleccionada()"
+        (click)="seleccionarDia(dia)"
+      >
+        {{ dia.numero }}
+        @if (dia.tieneVencimiento) { <span class="punto"></span> }
+      </button>
+      }
+      }
+    </div>
+    @if (fechaSeleccionada()) {
+    <button class="btn-limpiar" (click)="limpiarSeleccion()">✕ Quitar filtro ({{ fechaSeleccionada() }})</button>
+    }
+  </div>
+
+  <div class="caja-grafico caja-resto">
+    <h3>{{ tituloLineas() }}</h3>
+    @if (fechaSeleccionada() && productosDelDia().length === 0) {
+    <p class="sin-datos">Ningún producto vence ese día.</p>
+    } @else {
+    <apx-chart [series]="serieLineas" [chart]="chartLineas" [xaxis]="xaxisLineas"></apx-chart>
+    }
+  </div>
+</div>
+
+
+
+}

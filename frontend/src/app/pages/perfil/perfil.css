@@ -1,0 +1,144 @@
+.pagina-perfil {
+  display: flex;
+  justify-content: center;
+  padding-top: 12px;
+}
+
+.encabezado-perfil {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.encabezado-perfil h2 {
+  margin: 0 0 4px;
+}
+
+.encabezado-perfil p {
+  color: #888;
+  font-size: 14px;
+  margin: 0;
+}
+
+.tarjeta-perfil {
+  background: white;
+  border-radius: 20px;
+  padding: 40px 48px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.columna-foto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.foto-perfil {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #f0f4f0;
+}
+
+.foto-inicial {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 700;
+  border: 4px solid #f0f4f0;
+}
+
+.btn-cambiar-foto {
+  background: #f0f4f0;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #2e7d32;
+  transition: background 0.15s;
+}
+
+.btn-cambiar-foto:hover {
+  background: #e2ede2;
+}
+
+.columna-datos {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.columna-datos label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #777;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.columna-datos input {
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  border: 1px solid #e4e4e4;
+  border-radius: 10px;
+  font-size: 14px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.columna-datos input:focus {
+  outline: none;
+  border-color: #2e7d32;
+}
+
+.campo-bloqueado input {
+  background: #f7f7f7;
+  color: #aaa;
+}
+
+.mensaje-ok {
+  color: #2e7d32;
+  background: #eaf5ea;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin: -6px 0 18px;
+  text-align: center;
+}
+
+.btn-primario {
+  background: #2e7d32;
+  color: white;
+  border: none;
+  padding: 13px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.btn-primario:hover {
+  background: #276628;
+}
+
+.btn-primario:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
