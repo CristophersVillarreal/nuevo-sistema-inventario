@@ -1,6 +1,7 @@
 package com.laesquina.inventario.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 
 /**
  * Entidad Usuario: persona que inicia sesion en el sistema.
@@ -34,6 +35,8 @@ public class Usuario {
     private String foto;
 
     // Permite desactivar una cuenta sin borrarla (conserva su historial de movimientos).
+    // DEFAULT 1: al agregar la columna a una BD existente, los usuarios que ya estaban quedan activos.
+    @ColumnDefault("1")
     @Column(nullable = false)
     private boolean activo = true;
 

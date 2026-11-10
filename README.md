@@ -4,7 +4,7 @@ Readme · MD
 # Sistema de Gestión de Inventario – Minimarket "La Esquina"
 
 Proyecto del curso **Desarrollo Web Integrado** (sección 34385).
-Backend REST con **Spring Boot 3.3.4 + Spring Data JPA + MySQL + Spring Security (HTTP Basic)**,
+Backend REST con **Spring Boot 3.3.4 + Spring Data JPA + MySQL + Spring Security con JWT**,
 y una interfaz web construida con **Angular 21**, consumiendo la API REST del backend.
 Incluye un **asistente de inventario con IA real (Groq)**, que responde consultas en lenguaje
 natural basándose en los datos reales de la base de datos.
@@ -17,7 +17,7 @@ natural basándose en los datos reales de la base de datos.
 |---|---|
 | 1 | API REST de productos con datos en memoria. |
 | 2 | Persistencia en MySQL con JPA/Hibernate, consultas JPQL, transacciones y seguridad por roles. |
-| **3 (actual)** | Frontend en Angular (login, dashboard, CRUD, alertas, gestión de usuarios, perfil) + asistente de inventario con IA real (Groq). |
+| **3 (actual)** | Frontend en Angular (login, dashboard, CRUD, alertas, gestión de usuarios, perfil), autenticación con **JWT** y asistente de inventario con IA real (Groq). |
  
 ---
 
@@ -65,6 +65,8 @@ Las credenciales **no se escriben en el código**. Se leen de variables de entor
 | `DB_USER` | `root` | Usuario de MySQL |
 | `DB_PASSWORD` | *(vacío)* | **Contraseña de MySQL (obligatoria si root tiene clave)** |
 | `GROQ_API_KEY` | *(vacío)* | **API Key de Groq, obligatoria para el asistente con IA (ver sección 9)** |
+| `JWT_SECRET` | clave de desarrollo | Clave para firmar los tokens JWT (mínimo 32 caracteres). **Obligatorio definirla fuera del entorno local** |
+| `JWT_EXPIRACION_MINUTOS` | `480` | Duración del token (480 min = 8 horas) |
 
 **NetBeans**: clic derecho en el proyecto → *Properties* → *Actions* → *Run project* → en
 *Set Properties* agregar las líneas `Env.DB_PASSWORD=tu_clave` y `Env.GROQ_API_KEY=tu_key` (lo mismo para *Debug project*).
@@ -153,7 +155,34 @@ Los crea `DataInitializer` con la contraseña **cifrada con BCrypt**:
 
 ## 8. Endpoints
 
-Todas las rutas exigen autenticación HTTP Basic. Sin credenciales → **401**; rol sin permiso → **403**.
+### Autenticación con JWT
+
+1. El cliente inicia sesión **una sola vez** en `POST /api/auth/login`:
+   ```json
+   { "username": "admin", "password": "…" }
+   ```
+2. La API responde con un **token JWT** firmado (HS256) que contiene el usuario, el rol y la expiración:
+   ```json
+   { "token": "eyJhbGciOiJIUzI1NiJ9…", "tipo": "Bearer", "expiraEnSegundos": 28800, "usuario": "admin", "rol": "ADMIN", … }
+   ```
+3. En cada solicitud siguiente se envía la cabecera `Authorization: Bearer <token>`.
+   `JwtAuthenticationFilter` valida la firma y la expiración, y carga el rol del usuario.
+
+Respuestas de seguridad (siempre en JSON):
+
+| Situación | Respuesta |
+|---|---|
+| Sin token | **401** "Debe iniciar sesión y enviar el token en la cabecera Authorization" |
+| Usuario o contraseña incorrectos en el login | **401** "Usuario o contraseña incorrectos" |
+| Token alterado o mal formado | **401** "El token no es válido" |
+| Token expirado | **401** "El token expiró; inicie sesión nuevamente" |
+| Cuenta desactivada (aunque su token siga vigente) | **401** "La cuenta está desactivada" |
+| Usuario autenticado sin el rol necesario | **403** "Su rol no tiene permiso para realizar esta operación" |
+
+En Angular, el token se guarda en `sessionStorage`: la sesión **sobrevive a recargar la página**, se borra al
+cerrar la pestaña o con **Cerrar sesión**, y si el backend responde 401 se vuelve automáticamente al login.
+
+Todas las rutas, salvo el inicio de sesión y las fotos de perfil, exigen un token válido.
 
 ### Inventario (ya existentes)
 
@@ -177,7 +206,8 @@ Todas las rutas exigen autenticación HTTP Basic. Sin credenciales → **401**; 
 
 | Método | Ruta | ADMIN | OPERADOR | Descripción |
 |---|---|:-:|:-:|---|
-| GET | `/api/auth/me` | ✔ | ✔ | Datos de la sesión activa (usuario, rol, nombre, apellidos, foto) — usado por Angular al iniciar sesión |
+| POST | `/api/auth/login` | público | público | Inicia sesión y devuelve el token JWT (401 si las credenciales son incorrectas o la cuenta está desactivada) |
+| GET | `/api/auth/me` | ✔ | ✔ | Datos del usuario dueño del token (usuario, rol, nombre, apellidos, foto) |
 | POST | `/api/asistente/consultar` | ✔ | ✔ | Envía una pregunta al asistente; responde con IA real (Groq), usando el inventario actual como contexto |
 | GET | `/api/usuarios` | ✔ | ✘ | Listar todos los usuarios del sistema |
 | POST | `/api/usuarios` | ✔ | ✘ | Crear un usuario nuevo (usuario, contraseña, rol, nombre, apellidos) |
@@ -229,11 +259,13 @@ ajenos al inventario — manteniendo un trato natural para saludos y cortesías.
 ```bash
 ./mvnw test
 ```
-16 pruebas: consultas JPQL, transacciones (incluido el rollback del lote) y seguridad (200/201/401/403).
+22 pruebas: consultas JPQL, transacciones (incluido el rollback del lote) y seguridad con JWT (login correcto e
+incorrecto, token alterado, token expirado, cuenta desactivada y la matriz de permisos 200/201/401/403).
 
 **Postman** – importar los dos archivos de `docs/postman/` y ejecutar la colección con el *Runner*
-usando el entorno *La Esquina - Local* (32 solicitudes, 40 aserciones). Para que los valores coincidan con
-el informe, ejecutarla sobre una base recién creada.
+usando el entorno *La Esquina - Local* (38 solicitudes, 52 aserciones). La carpeta **00 Autenticación (JWT)**
+va primero: inicia sesión con `admin` y `operador` y guarda sus tokens, que usan todas las demás solicitudes.
+Para que los valores coincidan con el informe, ejecutarla sobre una base recién creada.
  
 ---
 
@@ -252,7 +284,7 @@ nuevo-sistema-inventario/
 │   │   ├── CategoriaController.java
 │   │   ├── MovimientoController.java
 │   │   ├── AsistenteController.java   POST /api/asistente/consultar
-│   │   ├── AuthController.java        GET /api/auth/me
+│   │   ├── AuthController.java        POST /api/auth/login (emite el JWT) y GET /api/auth/me
 │   │   ├── UsuarioController.java     Gestión de usuarios (solo ADMIN)
 │   │   ├── PerfilController.java      Perfil del usuario autenticado
 │   │   ├── ManejadorErrores.java
@@ -262,7 +294,8 @@ nuevo-sistema-inventario/
 │   │   ├── Usuario.java               Ampliado: nombre, apellidos, foto, activo
 │   │   └── Rol.java
 │   ├── repository/     Interfaces JpaRepository + consultas JPQL (@Query)
-│   ├── security/        SecurityConfig, UsuarioDetailsService, RespuestasSeguridad
+│   ├── security/        SecurityConfig, JwtService, JwtAuthenticationFilter,
+│   │                    UsuarioDetailsService, RespuestasSeguridad
 │   └── service/
 │       ├── ProductoService.java, CategoriaService.java, MovimientoService.java (@Transactional)
 │       └── AsistenteService.java      Arma el contexto real y consulta a Groq
@@ -270,7 +303,7 @@ nuevo-sistema-inventario/
 ├── frontend/             Proyecto Angular 21, independiente del backend
 │   └── src/app/
 │       ├── core/
-│       │   ├── auth.ts, auth-interceptor.ts, auth-guard.ts
+│       │   ├── auth.ts, auth-interceptor.ts, auth-guard.ts   Sesión con JWT (token en sessionStorage)
 │       │   ├── inventario.ts          Servicio centralizado: productos, categorías, usuarios, perfil
 │       │   └── asistente-chat.ts      Estado del historial de chats (persiste al navegar entre vistas)
 │       ├── layout/dashboard/          Sidebar contraíble + navbar con avatar/nombre

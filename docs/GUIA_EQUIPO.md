@@ -1,7 +1,7 @@
 # Guía del equipo: ejecutar el proyecto en otra PC
 
 Esta guía explica, paso a paso, qué instalar y cómo ejecutar el sistema **La Esquina** en una PC nueva
-(Windows o macOS), cómo ver la **interfaz web** y cómo probar la API con **Postman**.
+(Windows o macOS), cómo ver la **interfaz web en Angular** y cómo probar la API con **Postman**.
 Tiempo estimado: unos 40 minutos la primera vez (la mayor parte son descargas).
 
 ---
@@ -16,9 +16,11 @@ Tiempo estimado: unos 40 minutos la primera vez (la mayor parte son descargas).
 | 4 | **MySQL Workbench** | Ver las tablas y los datos | La última |
 | 5 | **Apache NetBeans** | Abrir y ejecutar el proyecto (opcional: también corre desde la terminal) | 23 o superior |
 | 6 | **Postman** (aplicación de escritorio) | Probar los endpoints de la API | La última |
-| 7 | Un navegador | Ver la interfaz web | Chrome, Edge, Firefox o Safari |
+| 7 | **Node.js** (incluye npm) | Ejecutar la interfaz web en Angular | **24 LTS** (Angular 21 exige 20.19, 22.12 o 24+) |
+| 8 | Un navegador | Ver la interfaz web | Chrome, Edge, Firefox o Safari |
 
-> La primera ejecución necesita **internet**, porque Maven descarga las librerías del proyecto (unos 100 MB).
+> La primera ejecución necesita **internet**, porque Maven y npm descargan las librerías del proyecto
+> (unos 100 MB del backend y unos 300 MB del frontend).
 
 ### Instalación rápida en Windows (con winget)
 
@@ -30,6 +32,7 @@ winget install --id EclipseAdoptium.Temurin.17.JDK -e
 winget install --id Oracle.MySQLWorkbench -e
 winget install --id Apache.NetBeans -e
 winget install --id Postman.Postman -e
+winget install --id OpenJS.NodeJS.LTS -e --version 24.22.1
 ```
 
 **MySQL Server conviene instalarlo con su instalador gráfico**, porque así se configura la contraseña y el servicio:
@@ -48,6 +51,7 @@ winget install --id Postman.Postman -e
 2. **MySQL 8.4:** instalador `.dmg` de <https://dev.mysql.com/downloads/mysql/>. Elige **ARM 64-bit** si tu Mac tiene chip Apple (M1 a M4) o **x86** si es Intel. Durante la instalación define la contraseña de root. Para encenderlo o apagarlo: *Configuración del Sistema → MySQL*.
 3. **Workbench, NetBeans y Postman:** desde sus páginas oficiales.
 4. **Git:** viene con las *Command Line Tools* (`xcode-select --install`).
+5. **Node.js 24:** `brew install node@24` (o el instalador de <https://nodejs.org>, versión 24 LTS).
 
 Comprueba la instalación de Java en una terminal nueva:
 
@@ -124,10 +128,15 @@ export DB_PASSWORD='tu_clave_de_mysql'
 
 > Si tu usuario de MySQL no es `root`, define también `DB_USER`. Si tu MySQL usa otro puerto,
 > define `DB_URL=jdbc:mysql://localhost:PUERTO/laesquina`.
+>
+> Otras variables (se configuran igual que `DB_PASSWORD`):
+> - `GROQ_API_KEY`: necesaria solo para el **Asistente IA** (cómo obtenerla: README, sección 9).
+> - `JWT_SECRET`: clave con la que se firman los tokens de sesión. En tu PC puedes omitirla (hay una clave de
+>   desarrollo); si la defines, debe tener al menos 32 caracteres.
 
 ---
 
-## 5. Ejecutar el proyecto
+## 5. Ejecutar el backend
 
 ### Desde NetBeans
 
@@ -160,47 +169,64 @@ Para detenerla: botón rojo ■ en NetBeans, o `Ctrl + C` en la terminal.
 
 ---
 
-## 6. Ver la interfaz web
+## 6. Ejecutar y ver la interfaz web (Angular)
 
-Con la aplicación corriendo:
+La interfaz es un proyecto **Angular** separado, en la carpeta `frontend/`. Corre en el puerto **4200** y consume
+la API del backend (puerto 8080), así que **el backend debe estar corriendo al mismo tiempo**.
 
-1. Abre el navegador en **<http://localhost:8080>**.
-2. El navegador muestra un cuadro de **inicio de sesión**: es la autenticación HTTP Basic de Spring Security.
-   Ingresa uno de los usuarios de prueba (las contraseñas están en el `README.md`, sección 5):
+En una **segunda terminal**:
+
+```bash
+cd nuevo-sistema-inventario/frontend
+npm install          # solo la primera vez (o cuando cambien las dependencias)
+npx ng serve
+```
+
+Cuando aparezca `Local: http://localhost:4200/`, abre **<http://localhost:4200>** en el navegador.
+
+1. Aparece la **pantalla de inicio de sesión** del sistema. Ingresa uno de los usuarios de prueba
+   (las contraseñas están en el `README.md`, sección 6):
 
    | Usuario | Rol | Qué puede hacer en la interfaz |
    |---|---|---|
-   | `admin` | Administrador | Ver todo, crear, editar y eliminar productos |
-   | `operador` | Operador de almacén | Ver todo; si intenta crear, editar o eliminar, aparece el mensaje *"Su rol no tiene permiso para realizar esta operación"* |
+   | `admin` | Administrador | Todo: productos, alertas, asistente, gestión de usuarios y perfil |
+   | `operador` | Operador de almacén | Consultar productos y alertas, usar el asistente y editar su perfil. No ve la gestión de usuarios ni puede modificar el catálogo |
 
-3. Recorre las vistas del menú izquierdo:
+2. Recorre las vistas del menú izquierdo:
 
    | Vista | Qué muestra |
    |---|---|
-   | **Panel** | Total de productos, unidades en stock, valor del inventario y alertas de stock mínimo |
-   | **Productos** | Tabla con categoría, ubicación, vencimiento, precio y stock; botones Nuevo, Editar y Eliminar |
-   | **Alertas de stock** | Productos con stock bajo (consulta JPQL) y productos próximos a vencer en 30 días (consulta JPQL) |
-   | **Asistente IA** | **Vista previa sin IA real** (responde con reglas simples). La IA con OpenAI se implementará en la etapa final |
+   | **Panel** | Tarjetas resumen, gráficos de stock por categoría y calendario de vencimientos |
+   | **Productos** | Listado con crear, editar y eliminar (solo ADMIN) |
+   | **Alertas de stock** | Productos con stock bajo y próximos a vencer (consultas JPQL) |
+   | **Asistente IA** | Chat con IA real (Groq) sobre el inventario. Necesita la variable `GROQ_API_KEY` (README, sección 9) |
+   | **Usuarios** | Crear usuarios y activar o desactivar cuentas (solo ADMIN) |
+   | **Mi perfil** | Nombre, apellidos y foto del usuario |
 
-**Para cambiar de usuario:** el navegador recuerda las credenciales mientras está abierto. Para entrar con el otro
-usuario, cierra **todas** las ventanas del navegador y vuelve a abrirlo, o usa una **ventana de incógnito**
-(`Ctrl + Shift + N` en Chrome/Edge). Un buen truco para la demo es tener el `admin` en una ventana normal y el
-`operador` en una de incógnito.
+3. **Cerrar sesión** (menú lateral) borra el token y vuelve al login. Así se cambia de usuario.
 
-> Limitación conocida del Avance 2: la interfaz todavía **no tiene la vista de movimientos** (entradas, salidas y lote).
-> Esas operaciones se prueban desde Postman (sección 7).
+**Cómo funciona la sesión (JWT):** al iniciar sesión, el backend entrega un **token** que la interfaz envía en cada
+petición. El token se guarda en la pestaña del navegador: la sesión **sigue activa si recargas la página (F5)**,
+y se pierde al cerrar la pestaña, al cerrar sesión o cuando el token expira (a las 8 horas). Si el token deja de
+ser válido, la interfaz te devuelve automáticamente al login.
+
+> Si la terminal dice que `ng` no se reconoce, usa siempre `npx ng serve` (no necesita instalar Angular CLI
+> de forma global).
 
 ---
 
 ## 7. Probar la API con Postman
 
 1. Abre **Postman** → **Import** → arrastra los dos archivos de la carpeta `docs/postman` del proyecto:
-   - `LaEsquina_Avance2.postman_collection.json`
+   - `LaEsquina_API.postman_collection.json`
    - `LaEsquina_Local.postman_environment.json`
 2. Arriba a la derecha, cambia *No Environment* por **La Esquina - Local**.
-3. Para probar una solicitud: ábrela en el panel izquierdo → **Send**.
-4. Para probar todo de una vez: pasa el mouse sobre la colección → **⋯ → Run** → **Run La Esquina - Avance 2**.
-   Debe terminar con **40 aserciones aprobadas y 0 fallidas**.
+3. **Primero inicia sesión:** abre la carpeta **00 Autenticación (JWT)** y envía *Login ADMIN* y *Login OPERADOR*.
+   Cada una guarda su token, y las demás solicitudes lo usan automáticamente (pestaña *Authorization* → *Bearer Token*).
+4. Para probar una solicitud: ábrela en el panel izquierdo → **Send**. Si responde 401 con "El token expiró",
+   vuelve a enviar los logins de la carpeta 00.
+5. Para probar todo de una vez: pasa el mouse sobre la colección → **⋯ → Run** → **Run La Esquina - API (JWT)**.
+   Debe terminar con **38 solicitudes y 52 aserciones aprobadas, 0 fallidas**.
 
 > Si Postman abre la carpeta en *Local mode* y muestra el aviso "Upgrade to v3", **no lo apliques**: cambia a la
 > vista de colecciones (ícono del cubo, arriba a la izquierda) e importa los archivos con `Ctrl + O`.
@@ -215,7 +241,7 @@ mvnw.cmd test        # Windows
 ```
 
 O en NetBeans: clic derecho en el proyecto → **Test**.
-Resultado esperado: `Tests run: 16, Failures: 0, Errors: 0` y `BUILD SUCCESS`.
+Resultado esperado: `Tests run: 22, Failures: 0, Errors: 0` y `BUILD SUCCESS`.
 Estas pruebas usan una base de datos en memoria (H2), así que **no modifican** tu MySQL.
 
 ---
@@ -248,10 +274,14 @@ Con la base limpia, los valores coinciden con los del informe (Coca Cola con sto
 | `Port 8080 was already in use` | La aplicación ya está corriendo (u otro programa usa el puerto) | Detén la ejecución anterior (botón rojo ■ en NetBeans) |
 | `Could not find or load main class ${start-class}` | Versión antigua del proyecto | Ejecuta `git pull` (ya está corregido en el `pom.xml`) |
 | `release version 17 not supported` | Tu JDK es menor que 17 | Instala el JDK 17 o 21 y selecciónalo en NetBeans (*Tools → Java Platforms*) |
-| El navegador pide la contraseña una y otra vez | Usuario o contraseña incorrectos | Revisa los usuarios de prueba en el `README.md` |
+| El login dice "Usuario o contraseña incorrectos" | Credenciales equivocadas | Revisa los usuarios de prueba en el `README.md` (sección 6) |
+| El login dice "La cuenta está desactivada" | Un administrador desactivó ese usuario | Actívalo desde la vista **Usuarios** con el `admin` |
+| La interfaz te devuelve al login sin motivo aparente | El token expiró (8 h) o se reinició el backend con otro `JWT_SECRET` | Vuelve a iniciar sesión |
+| `ng` no se reconoce como comando | Angular CLI no está instalado de forma global | Usa `npx ng serve` |
+| La interfaz carga pero no muestra datos | El backend está apagado | Ejecuta el backend (sección 5) en otra terminal |
 | `./mvnw: Permission denied` (Mac) | Falta el permiso de ejecución | `chmod +x mvnw` |
-| La interfaz se ve sin estilos | Sin internet (Bootstrap se carga desde un CDN) | Conéctate a internet y recarga la página |
 | Postman: `{{baseUrl}}` en rojo o "Could not send request" | No se seleccionó el entorno, o la app está apagada | Selecciona **La Esquina - Local** y verifica que la app esté corriendo |
+| Postman: todas las solicitudes dan 401 | Aún no se ejecutaron los logins o el token expiró | Envía las solicitudes de la carpeta **00 Autenticación (JWT)** |
 
 ---
 
@@ -261,7 +291,8 @@ Con la base limpia, los valores coinciden con los del informe (Coca Cola con sto
 - [ ] MySQL 8.4 está encendido y Workbench se conecta.
 - [ ] `DB_PASSWORD` está configurada.
 - [ ] La consola muestra `HikariPool-1 - Start completed` y `Started InventarioApplication`.
-- [ ] <http://localhost:8080> pide usuario y contraseña, y muestra el panel.
+- [ ] `node -v` muestra 24 (o 20.19+ / 22.12+).
+- [ ] <http://localhost:4200> muestra el login; con `admin` entra al panel y **Cerrar sesión** vuelve al login.
 - [ ] En Workbench aparecen las 5 tablas dentro de `laesquina`.
-- [ ] El Runner de Postman termina con 40/40 aserciones.
-- [ ] `mvnw test` termina con 16 pruebas y `BUILD SUCCESS`.
+- [ ] El Runner de Postman termina con 52/52 aserciones.
+- [ ] `mvnw test` termina con 22 pruebas y `BUILD SUCCESS`.

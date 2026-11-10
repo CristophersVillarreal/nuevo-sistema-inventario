@@ -124,8 +124,8 @@ En macOS, las apps abiertas desde el Dock (como NetBeans) **no heredan** las var
 ### 7. Verificación final (un día antes de sustentar)
 
 1. MySQL encendido → arrancar la app → en la consola deben aparecer `HikariPool-1 - Start completed` y `Started InventarioApplication`.
-2. Abrir <http://localhost:8080> → entrar con el usuario `operador` (contraseña de prueba en el README).
-3. Postman → importar `docs/postman/` → *Run collection* → **32 solicitudes y 40 aserciones en verde**.
+2. En otra terminal, dentro de `frontend/`: `npm install` (la primera vez) y `npx ng serve` → abrir <http://localhost:4200> → iniciar sesión con `operador` (contraseña de prueba en el README).
+3. Postman → importar `docs/postman/` → *Run collection* → **38 solicitudes y 52 aserciones en verde**.
 4. Revisar en Workbench que existan las 5 tablas.
 
 ---

@@ -1,15 +1,204 @@
 {
   "info": {
-    "name": "La Esquina - Avance 2",
-    "description": "Pruebas de la API del Sistema de Inventario La Esquina: seguridad, CRUD, consultas JPQL y transacciones. Ejecutar con el entorno 'La Esquina - Local'.",
+    "name": "La Esquina - API (JWT)",
+    "description": "Pruebas de la API del Sistema de Inventario La Esquina con autenticación JWT. Ejecutar primero la carpeta 00 (inicio de sesión), que guarda los tokens que usan las demás. Usar con el entorno 'La Esquina - Local'.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "01 Seguridad (rubro 8.6)",
+      "name": "00 Autenticación (JWT)",
       "item": [
         {
-          "name": "Caso 6 - Sin credenciales -> 401",
+          "name": "Login ADMIN -> 200 (guarda token_admin)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin_user}}\",\n  \"password\": \"{{admin_pass}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.collectionVariables.set(\"token_admin\", pm.response.json().token);",
+                  "pm.test(\"Devuelve un token Bearer\", function () { pm.expect(pm.response.json().tipo).to.eql(\"Bearer\"); pm.expect(pm.response.json().token).to.be.a(\"string\"); });",
+                  "pm.test(\"Rol ADMIN\", function () { pm.expect(pm.response.json().rol).to.eql(\"ADMIN\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login OPERADOR -> 200 (guarda token_operador)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{operador_user}}\",\n  \"password\": \"{{operador_pass}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.collectionVariables.set(\"token_operador\", pm.response.json().token);",
+                  "pm.test(\"Devuelve un token Bearer\", function () { pm.expect(pm.response.json().tipo).to.eql(\"Bearer\"); pm.expect(pm.response.json().token).to.be.a(\"string\"); });",
+                  "pm.test(\"Rol OPERADOR\", function () { pm.expect(pm.response.json().rol).to.eql(\"OPERADOR\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login con contraseña incorrecta -> 401",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{operador_user}}\",\n  \"password\": \"clave-equivocada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401\", function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Datos del usuario del token (/api/auth/me) -> 200",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Usuario admin\", function () { pm.expect(pm.response.json().usuario).to.eql(pm.environment.get(\"admin_user\")); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 Seguridad: roles y tokens",
+      "item": [
+        {
+          "name": "Caso 6 - Sin token -> 401",
           "request": {
             "auth": {
               "type": "noauth"
@@ -42,19 +231,14 @@
           ]
         },
         {
-          "name": "Caso 7 - Contraseña incorrecta -> 401",
+          "name": "Token alterado -> 401",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "clave-equivocada",
+                  "key": "token",
+                  "value": "{{token_admin}}alterado",
                   "type": "string"
                 }
               ]
@@ -70,8 +254,7 @@
                 "api",
                 "productos"
               ]
-            },
-            "description": ""
+            }
           },
           "event": [
             {
@@ -79,7 +262,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 401\", function () { pm.response.to.have.status(401); });"
+                  "pm.test(\"Responde 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Indica token no valido\", function () { pm.expect(pm.response.json().mensaje).to.include(\"token\"); });"
                 ]
               }
             }
@@ -89,16 +273,11 @@
           "name": "Caso 1 - OPERADOR consulta productos -> 200",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -134,16 +313,11 @@
           "name": "Caso 3 - OPERADOR registra producto -> 403",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -192,16 +366,11 @@
           "name": "Caso 4 - OPERADOR elimina producto -> 403",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -237,16 +406,11 @@
           "name": "OPERADOR modifica categoría -> 403",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -291,6 +455,82 @@
               }
             }
           ]
+        },
+        {
+          "name": "ADMIN lista usuarios -> 200",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "OPERADOR lista usuarios -> 403",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_operador}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -301,16 +541,11 @@
           "name": "Listar productos (ADMIN) -> 200",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -345,16 +580,11 @@
           "name": "Buscar producto 1 -> 200",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -390,16 +620,11 @@
           "name": "Buscar producto inexistente -> 404",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -435,16 +660,11 @@
           "name": "Caso 2 - ADMIN registra producto -> 201",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -495,16 +715,11 @@
           "name": "Registrar con datos inválidos -> 400",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -553,16 +768,11 @@
           "name": "Actualizar producto creado -> 200",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -613,16 +823,11 @@
           "name": "Eliminar producto creado -> 204",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -658,16 +863,11 @@
           "name": "Verificar eliminación -> 404",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -708,16 +908,11 @@
           "name": "Listar categorías -> 200",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -752,16 +947,11 @@
           "name": "Registrar categoría -> 201",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -811,16 +1001,11 @@
           "name": "Actualizar categoría -> 200",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -870,16 +1055,11 @@
           "name": "Eliminar categoría -> 204",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -915,16 +1095,11 @@
           "name": "Eliminar categoría con productos -> 409",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -965,16 +1140,11 @@
           "name": "Q1 Stock bajo -> 200",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -1011,16 +1181,11 @@
           "name": "Q3 Próximos a vencer (30 días) -> 200",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -1062,16 +1227,11 @@
           "name": "Q2 Historial del producto 4 -> 200",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -1108,16 +1268,11 @@
           "name": "Listar todos los movimientos -> 200",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -1157,16 +1312,11 @@
           "name": "Caso 5 - ENTRADA de 20 (Coca Cola, id 4) -> 201",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -1215,16 +1365,11 @@
           "name": "SALIDA mayor al stock -> 400 (no se guarda nada)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -1273,16 +1418,11 @@
           "name": "Stock ANTES del lote",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -1319,16 +1459,11 @@
           "name": "Movimientos ANTES del lote",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -1364,16 +1499,11 @@
           "name": "LOTE con ítem 3 inválido -> 400 (ROLLBACK)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -1424,16 +1554,11 @@
           "name": "Stock DESPUÉS del lote (igual al de antes)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -1473,16 +1598,11 @@
           "name": "Movimientos DESPUÉS del lote (sin nuevos)",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -1518,16 +1638,11 @@
           "name": "LOTE válido -> 201",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{operador_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{operador_pass}}",
+                  "key": "token",
+                  "value": "{{token_operador}}",
                   "type": "string"
                 }
               ]
@@ -1577,16 +1692,11 @@
           "name": "Eliminar producto con movimientos -> 409",
           "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{admin_user}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{admin_pass}}",
+                  "key": "token",
+                  "value": "{{token_admin}}",
                   "type": "string"
                 }
               ]
@@ -1636,6 +1746,14 @@
     },
     {
       "key": "movimientosAntes",
+      "value": ""
+    },
+    {
+      "key": "token_admin",
+      "value": ""
+    },
+    {
+      "key": "token_operador",
       "value": ""
     }
   ]

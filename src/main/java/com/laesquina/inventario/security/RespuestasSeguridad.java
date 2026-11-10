@@ -16,7 +16,7 @@ import java.io.IOException;
 
 /**
  * Respuestas JSON de seguridad, con el mismo formato que el resto de errores:
- *  - 401 Unauthorized: no se pudo identificar al usuario (sin credenciales o incorrectas).
+ *  - 401 Unauthorized: no se pudo identificar al usuario (sin token, o token alterado o expirado).
  *  - 403 Forbidden: el usuario esta identificado, pero su rol no tiene permiso.
  */
 @Component
@@ -28,14 +28,16 @@ public class RespuestasSeguridad implements AuthenticationEntryPoint, AccessDeni
         this.objectMapper = objectMapper;
     }
 
-    // 401: se ejecuta cuando falta la autenticacion o las credenciales son incorrectas.
+    // 401: se ejecuta cuando la solicitud no trae un token JWT valido.
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException ex) throws IOException {
-        // Indica al cliente (navegador o Postman) que debe autenticarse con HTTP Basic.
-        response.setHeader("WWW-Authenticate", "Basic realm=\"La Esquina\"");
-        escribir(response, HttpStatus.UNAUTHORIZED,
-                "Debe autenticarse con un usuario y contraseña válidos", request);
+        // Indica al cliente que debe autenticarse con un token Bearer (JWT).
+        response.setHeader("WWW-Authenticate", "Bearer");
+        Object motivo = request.getAttribute(JwtAuthenticationFilter.MOTIVO_401);
+        String mensaje = motivo != null ? motivo.toString()
+                : "Debe iniciar sesión y enviar el token en la cabecera Authorization";
+        escribir(response, HttpStatus.UNAUTHORIZED, mensaje, request);
     }
 
     // 403: se ejecuta cuando el usuario autenticado no tiene el rol requerido.
